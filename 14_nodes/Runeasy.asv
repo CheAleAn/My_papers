@@ -1,0 +1,93 @@
+clear all
+tic;
+Loaddata();
+Variables();
+%загрузка задачи
+%параметры %популяция
+timelimit=600; %предел по времени
+cyclelimit=200; %предел по кол-ву циклов
+repeatlimit=20;
+Kurs=ceil(P/10);
+lyam(1,2)=1-lyam(1,1);
+
+numberofcycle=0
+CreationFcn(); %создание первых родителей
+
+scoreparents=zeros(P,2);
+
+for i=1:P %режим для родителей
+    parents=population(i,:);
+    Fitnesslife();
+    scoreparents(i,1)=reghim(1);
+    scoreparents(i,2)=reghim(2);
+end
+
+Rangparents(); %ранжирование родителей
+method();%выбор метода отбора
+Rangparentspart2();%окончание ранжирования родителей
+
+repeatnow=0;
+sumofkids=P;
+scorekids=zeros(sumofkids,2);
+xoverKids=zeros(sumofkids,GenomeLength);
+
+%ГА
+while numberofcycle<cyclelimit & repeatnow<repeatlimit %условия остановки
+    numberofcycle=round(numberofcycle+1)
+for i=1:P %для сравнения этого и предыдущего цикла
+        Rang2(i,1)=Rangall(i,2);
+        Rang2(i,2)=scoreparents(i,1);
+        Rang2(i,3)=scoreparents(i,2);
+end
+%numberofcycle=numberofcycle+0.1
+    Crossing();%скрещивание
+    Mutation();%мутация    
+%numberofcycle=numberofcycle+0.1
+for iii=1:sumofkids %расчет режима для детей
+    parents=xoverKids(iii,:);
+    Fitnesslife();
+    scorekids(iii,1)=reghim(1);
+    scorekids(iii,2)=reghim(2);
+end
+%numberofcycle=numberofcycle+0.1
+Rangingall(); %ранжирование родителей и детей
+method();%выбор метода отбора;
+Rangingallpart2();%окончание ранжирования родителей и детей
+%numberofcycle=numberofcycle+0.1
+Comparison(); %сравнение этого и предыдущего цикла
+end
+
+for i=1:P %вывод данных хороших результатов
+    if Rangall(i,2)<=Kurs
+        scorenorm(i,1)=Rangall(i,3);
+        scorenorm(i,2)=Rangall(i,4);
+    end
+end  
+for i=1:P %вывод данных лучших результатов
+    if Rangall(i,2)==1
+        scorebest(i,1)=Rangall(i,3);
+        scorebest(i,2)=Rangall(i,4);
+    end
+end 
+scorebest
+%рисунки
+%plot(scoreparents(:,1),scoreparents(:,2),'w-',scoreparents(:,1),scoreparents(:,2),'ko');
+%figure
+%plot(scorebest(:,1),scorebest(:,2),'w-',scorebest(:,1),scorebest(:,2),'ko');
+%figure
+%plot(scorenorm(:,1),scorenorm(:,2),'w-',scorenorm(:,1),scorenorm(:,2),'ko');
+time=toc
+numberofcycle
+X=Rangall(1:length(scorenorm),:)
+save x.txt numberofcycle  time X -ascii 
+plot(scoreparents(:,1),scoreparents(:,2),'w-',scoreparents(:,1),scoreparents(:,2),'ko');
+print -dpng figureA
+
+
+
+
+
+
+
+
+
